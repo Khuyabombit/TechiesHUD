@@ -8,6 +8,8 @@ TechiesHUD.optionDelay = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHU
 
 TechiesHUD.optionStack = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Action" }, "Stack mines", "Automatically puts mines as close as possible to each other")
 
+TechiesHUD.optionStackRange = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Action" }, "Range Stack mines", "The radius at which nearby mines will be placed on the nearest mine", 0, 500, 10)
+
 TechiesHUD.optionForce = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Action" }, "Auto force stuff", "Automatically use force stuff")
 
 TechiesHUD.optionLR = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Land mines range", "Draw the radius of land mines")
@@ -18,11 +20,25 @@ TechiesHUD.optionRR = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD",
 
 TechiesHUD.optionPanelInfo = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Panel", "Panel showing the number of mines for killing")
 
+TechiesHUD.optionPanelInfoXL = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "x left", "horizontal offset", -100, 100, 1)
+
+TechiesHUD.optionPanelInfoXR = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "x right", "horizontal offset", -100, 100, 1)
+
+TechiesHUD.optionPanelInfoY = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "y", "vertical offset", -20, 100, 1)
+
+TechiesHUD.optionPanelInfoDistLeft = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "distance left", "Distance between blocks radiant", -20, 1000, 1)
+
+TechiesHUD.optionPanelInfoDistRight = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "distance right", "Distance between blocks dire", -20, 1000, 1)
+
 TechiesHUD.optionBlastInfo = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Blast info", "Displays the damage needed to kill")
 
-TechiesHUD.font = Renderer.LoadFont("Tahoma", 10, Enum.FontWeight.EXTRABOLD)
+TechiesHUD.optionFont = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Font1", "Num mines, need blast damage, timers and etc", 10, 100, 1)
 
-TechiesHUD.HUDfont = Renderer.LoadFont("Tahoma", 15, Enum.FontWeight.BOLD)
+TechiesHUD.optionFontTopBar = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Font2", "Top bar", 10, 100, 1)
+
+TechiesHUD.font = Renderer.LoadFont("Tahoma", Config.ReadInt("TechiesHUD", "font", 10), Enum.FontWeight.EXTRABOLD)
+
+TechiesHUD.HUDfont = Renderer.LoadFont("Tahoma",  Config.ReadInt("TechiesHUD", "Bar_font", 15), Enum.FontWeight.BOLD)
 
 mines_time = {} 
 mines_damage = {}
@@ -32,6 +48,7 @@ check_detonate = {}
 forc_time = 0
 forced_time = 0
 force_direction = {}
+castPosit = {}
 for i = 0, 10000 do
 	mines_time[i] = 0
 	hero_time[i] = 0
@@ -39,8 +56,51 @@ for i = 0, 10000 do
 	hero_rotate_time[i] = 0
 end
 
-function TechiesHUD.OnEntityCreate(ent)
+-- function TechiesHUD.OnUnitAnimation(animation)
 	
+	-- local myHero = Heroes.GetLocal()
+
+	-- if not myHero then 
+		-- return 
+	-- end
+	
+	-- if NPC.GetUnitName(myHero) ~= "npc_dota_hero_techies" then 
+		-- return 
+	-- end
+	
+	-- if NPC.GetUnitName(animation.unit) ~= "npc_dota_hero_techies" then
+		-- return
+	-- end
+	-- Log.Write("da")
+	-- castBlast = 1
+	-- castPosit = animation.castpoint
+-- end
+
+-- function TechiesHUD.OnUnitAnimationEnd(animation)
+
+	-- -- if "npc_dota_hero_techies" ~= NPC.GetUnitName(animation.unit) then
+		-- -- return
+	-- -- end
+	-- Log.Write("end")
+	-- -- if castBlast == 1 then
+		-- -- castBlast = 0
+	-- -- end
+-- end
+
+
+function TechiesHUD.OnMenuOptionChange(option, oldValue, newValue)
+	--Log.Write(option)
+	if option == 18 then
+		TechiesHUD.font = Renderer.LoadFont("Tahoma", newValue, Enum.FontWeight.EXTRABOLD)
+		Config.WriteInt("TechiesHUD", "font", newValue)
+	end
+	if option == 19 then
+		TechiesHUD.HUDfont = Renderer.LoadFont("Tahoma", newValue, Enum.FontWeight.EXTRABOLD)
+		Config.WriteInt("TechiesHUD", "Bar_font", newValue)
+	end
+end
+
+function TechiesHUD.OnEntityCreate(ent)
 	if not Menu.IsEnabled(TechiesHUD.optionTotal) then return end
 	if not Menu.IsEnabled(TechiesHUD.optionStack) then return end
 	
@@ -94,6 +154,11 @@ function TechiesHUD.OnDraw()
 	--else
 	--	remote_damage = Ability.GetLevelSpecialValueFor(remote, "damage")
 	--end
+	
+	if Ability.IsInAbilityPhase(blast) then
+		Renderer.SetDrawColor(255, 255, 255, 255)
+		DrawCircle(castPosit, 400)
+	end
 	
 	for i = 0, NPCs.Count() do
 		local Unit = NPCs.Get(i)
@@ -286,10 +351,10 @@ function TechiesHUD.OnDraw()
 					Renderer.SetDrawColor(0, 255, 0, 255)
 					local size_x, size_y = Renderer.GetScreenSize()
 					if (Entity.GetTeamNum(myHero) == 2) then
-						Renderer.DrawText(TechiesHUD.HUDfont, size_x / 2 + 30 + 53 * (Hero.GetPlayerID(Unit) - 4), 32, (math.ceil(Hp * 10) / 10) .. "|" .. (math.ceil(Hp_all * 10) / 10), 0)
+						Renderer.DrawText(TechiesHUD.HUDfont, size_x / 2 + 30 + (53 + Menu.GetValue(TechiesHUD.optionPanelInfoDistRight)) * (Hero.GetPlayerID(Unit) - 4) + Menu.GetValue(TechiesHUD.optionPanelInfoXR), 32 + Menu.GetValue(TechiesHUD.optionPanelInfoY), (math.ceil(Hp * 10) / 10).. "|" .. (math.ceil(Hp_all * 10) / 10), 0)
 					end
 					if (Entity.GetTeamNum(myHero) == 3) then
-						Renderer.DrawText(TechiesHUD.HUDfont, size_x / 2 - 450 + 53 * Hero.GetPlayerID(Unit), 40, (math.ceil(Hp * 10) / 10) .. "|" .. (math.ceil(Hp_all * 10) / 10), 0)
+						Renderer.DrawText(TechiesHUD.HUDfont, size_x / 2 - 400 + (53 + Menu.GetValue(TechiesHUD.optionPanelInfoDistLeft)) * Hero.GetPlayerID(Unit) + Menu.GetValue(TechiesHUD.optionPanelInfoXL), 32 + Menu.GetValue(TechiesHUD.optionPanelInfoY), (math.ceil(Hp * 10) / 10) .. "|" .. (math.ceil(Hp_all * 10) / 10), 0)
 					end
 				end
 			end -- remote num display
@@ -299,7 +364,6 @@ end
 
 check_detonate = 0
 function TechiesHUD.OnUpdate()
-	
 	if not Menu.IsEnabled(TechiesHUD.optionTotal) then return end
 	
 	local myHero = Heroes.GetLocal()
@@ -388,15 +452,25 @@ function TechiesHUD.OnPrepareUnitOrders(orders)
     if not orders.ability then return true end
     if not orders.npc then return true end
 	
-	if Ability.GetName(orders.ability) ~= "techies_remote_mines" then return true end
+	if Ability.GetName(orders.ability) == "techies_suicide" then
+		castPosit = orders.position
+		return true
+	end
+	
+	if Ability.GetName(orders.ability) ~= "techies_remote_mines"
+	and Ability.GetName(orders.ability) ~= "techies_land_mines"
+	and Ability.GetName(orders.ability) ~= "techies_stasis_trap"
+	then return true end
 	
 	for i = 0, NPCs.Count() do
 		local Unit = NPCs.Get(i)
-		local UnitPos = Entity.GetAbsOrigin(Unit)	
-		if ((NPC.GetUnitName(Unit) == "npc_dota_techies_remote_mine") 
-		and Entity.IsAlive(Unit) 
-		and NPC.IsPositionInRange(Unit, orders.position, 50, 0)) 
-		and NPC.GetModifier(Unit, "modifier_techies_remote_mine") ~= nil
+		local UnitPos = Entity.GetAbsOrigin(Unit)
+		if ((NPC.GetModifier(Unit, "modifier_techies_remote_mine") ~= nil
+		or NPC.GetModifier(Unit, "modifier_techies_land_mine") ~= nil
+		or NPC.GetModifier(Unit, "modifier_techies_stasis_trap") ~= nil)
+		and Entity.IsAlive(Unit)
+		and NPC.IsPositionInRange(Unit, orders.position, Menu.GetValue(TechiesHUD.optionStackRange), 0))
+		--	and NPC.GetModifier(Unit, "modifier_techies_remote_mine") ~= nil
 		then
 			Player.PrepareUnitOrders(orders.player, orders.order, orders.target, UnitPos, orders.ability, orders.orderIssuer, orders.npc, orders.queue, orders.showEffects)
 			
