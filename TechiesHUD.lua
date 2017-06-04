@@ -4,6 +4,11 @@ TechiesHUD.optionTotal = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHU
 
 TechiesHUD.optionDetonate = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Action" }, "Auto mines", "Auto detonate remote mines")
 
+TechiesHUD.optionLegitDetonate = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Action" }, "Auto mines mode", "Standart or legit")
+
+Menu.SetValueName(TechiesHUD.optionLegitDetonate, 1, "legit")
+Menu.SetValueName(TechiesHUD.optionLegitDetonate, 0, "standart")
+
 TechiesHUD.optionDelay = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Action" }, "Delay detonate ms", "wait some time after detonate in ms", 0, 3000, 50)
 
 TechiesHUD.optionStack = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Action" }, "Stack mines", "Automatically puts mines as close as possible to each other")
@@ -20,21 +25,31 @@ TechiesHUD.optionRR = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD",
 
 TechiesHUD.optionPanelInfo = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Panel", "Panel showing the number of mines for killing")
 
-TechiesHUD.optionPanelInfoXL = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "x left", "horizontal offset", -100, 100, 1)
+TechiesHUD.optionPanelInfoXLInvert = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "x left offset invert", "x offset invert", 0, 1, 1)
+TechiesHUD.optionPanelInfoXL = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "x left", "horizontal offset", 0, 400, 1)
 
-TechiesHUD.optionPanelInfoXR = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "x right", "horizontal offset", -100, 100, 1)
+TechiesHUD.optionPanelInfoXRInvert = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "x right offset invert", "x offset invert", 0, 1, 1)
+TechiesHUD.optionPanelInfoXR = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "x right", "horizontal offset", 0, 400, 1)
 
-TechiesHUD.optionPanelInfoY = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "y", "vertical offset", -20, 100, 1)
+TechiesHUD.optionPanelInfoYInvert = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "y offset invert", "y offset invert", 0, 1, 1)
+TechiesHUD.optionPanelInfoY = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "y offset", "vertical offset", 0, 400, 1)
 
-TechiesHUD.optionPanelInfoDistLeft = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "distance left", "Distance between blocks radiant", -20, 1000, 1)
+TechiesHUD.optionPanelInfoColumn = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "Draw column", "Draws the number of mines for the current xn and for the whole number of columns")
 
-TechiesHUD.optionPanelInfoDistRight = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "distance right", "Distance between blocks dire", -20, 1000, 1)
+TechiesHUD.optionPanelInfoYColumnInvert = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "y column offset invert", "y offset when draw column", 0, 1, 1)
+TechiesHUD.optionPanelInfoYColumn = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "y column offset", "y offset when draw column", 0, 400, 1)
+
+TechiesHUD.optionPanelInfoDistLeftInvert = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "Distance left invert", "Distance left invert", 0, 1, 1)
+TechiesHUD.optionPanelInfoDistLeft = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "Distance left", "Distance left invert", 0, 1000, 1)
+
+TechiesHUD.optionPanelInfoDistRightInvert = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "Distance right invert", "Distance right invert", 0, 1, 1)
+TechiesHUD.optionPanelInfoDistRight = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display", "Panel calibration" }, "Distance right", "Distance between blocks dire", 0, 1000, 1)
 
 TechiesHUD.optionBlastInfo = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Blast info", "Displays the damage needed to kill")
 
 TechiesHUD.optionFont = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Font1", "Num mines, need blast damage, timers and etc", 10, 100, 1)
 
-TechiesHUD.optionFontTopBar = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Font2", "Top bar", 10, 100, 1)
+TechiesHUD.optionFontTopBar = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Font2 top bar", "Top bar", 10, 100, 1)
 
 TechiesHUD.font = Renderer.LoadFont("Tahoma", Config.ReadInt("TechiesHUD", "font", 10), Enum.FontWeight.EXTRABOLD)
 
@@ -56,45 +71,13 @@ for i = 0, 10000 do
 	hero_rotate_time[i] = 0
 end
 
--- function TechiesHUD.OnUnitAnimation(animation)
-	
-	-- local myHero = Heroes.GetLocal()
-
-	-- if not myHero then 
-		-- return 
-	-- end
-	
-	-- if NPC.GetUnitName(myHero) ~= "npc_dota_hero_techies" then 
-		-- return 
-	-- end
-	
-	-- if NPC.GetUnitName(animation.unit) ~= "npc_dota_hero_techies" then
-		-- return
-	-- end
-	-- Log.Write("da")
-	-- castBlast = 1
-	-- castPosit = animation.castpoint
--- end
-
--- function TechiesHUD.OnUnitAnimationEnd(animation)
-
-	-- -- if "npc_dota_hero_techies" ~= NPC.GetUnitName(animation.unit) then
-		-- -- return
-	-- -- end
-	-- Log.Write("end")
-	-- -- if castBlast == 1 then
-		-- -- castBlast = 0
-	-- -- end
--- end
-
-
 function TechiesHUD.OnMenuOptionChange(option, oldValue, newValue)
 	--Log.Write(option)
-	if option == 18 then
+	if option == TechiesHUD.optionFont then
 		TechiesHUD.font = Renderer.LoadFont("Tahoma", newValue, Enum.FontWeight.EXTRABOLD)
 		Config.WriteInt("TechiesHUD", "font", newValue)
 	end
-	if option == 19 then
+	if option == TechiesHUD.optionFontTopBar then
 		TechiesHUD.HUDfont = Renderer.LoadFont("Tahoma", newValue, Enum.FontWeight.EXTRABOLD)
 		Config.WriteInt("TechiesHUD", "Bar_font", newValue)
 	end
@@ -249,8 +232,9 @@ function TechiesHUD.OnDraw()
 						num_mines = num_mines + 1
 					end
 				end
-				
-				Renderer.DrawText(TechiesHUD.font, x, y, num_mines, 0)
+				if NPC.GetModifier(Unit, "modifier_techies_remote_mine") ~= nil then
+					Renderer.DrawText(TechiesHUD.font, x, y, num_mines, 0)
+				end
 			end
 			
 			
@@ -350,11 +334,22 @@ function TechiesHUD.OnDraw()
 					
 					Renderer.SetDrawColor(0, 255, 0, 255)
 					local size_x, size_y = Renderer.GetScreenSize()
-					if (Entity.GetTeamNum(myHero) == 2) then
-						Renderer.DrawText(TechiesHUD.HUDfont, size_x / 2 + 30 + (53 + Menu.GetValue(TechiesHUD.optionPanelInfoDistRight)) * (Hero.GetPlayerID(Unit) - 4) + Menu.GetValue(TechiesHUD.optionPanelInfoXR), 32 + Menu.GetValue(TechiesHUD.optionPanelInfoY), (math.ceil(Hp * 10) / 10).. "|" .. (math.ceil(Hp_all * 10) / 10), 0)
-					end
-					if (Entity.GetTeamNum(myHero) == 3) then
-						Renderer.DrawText(TechiesHUD.HUDfont, size_x / 2 - 400 + (53 + Menu.GetValue(TechiesHUD.optionPanelInfoDistLeft)) * Hero.GetPlayerID(Unit) + Menu.GetValue(TechiesHUD.optionPanelInfoXL), 32 + Menu.GetValue(TechiesHUD.optionPanelInfoY), (math.ceil(Hp * 10) / 10) .. "|" .. (math.ceil(Hp_all * 10) / 10), 0)
+					if Menu.GetValue(TechiesHUD.optionPanelInfoColumn) == 1 then
+						if (Entity.GetTeamNum(myHero) == 2) then
+							Renderer.DrawText(TechiesHUD.HUDfont, size_x / 2 + 30 + (53 + Menu.GetValue(TechiesHUD.optionPanelInfoDistRight) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoDistRightInvert)) * (Hero.GetPlayerID(Unit) - 4) + Menu.GetValue(TechiesHUD.optionPanelInfoXR) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoXRInvert), 32 + Menu.GetValue(TechiesHUD.optionPanelInfoY) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoYInvert), (math.ceil(Hp * 10) / 10), 0)
+							Renderer.DrawText(TechiesHUD.HUDfont, size_x / 2 + 30 + (53 + Menu.GetValue(TechiesHUD.optionPanelInfoDistRight) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoDistRightInvert)) * (Hero.GetPlayerID(Unit) - 4) + Menu.GetValue(TechiesHUD.optionPanelInfoXR) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoXRInvert), 52 + Menu.GetValue(TechiesHUD.optionPanelInfoY) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoYInvert) + Menu.GetValue(TechiesHUD.optionPanelInfoYColumn) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoYColumnInvert), (math.ceil(Hp_all * 10) / 10), 0)
+						end
+						if (Entity.GetTeamNum(myHero) == 3) then
+							Renderer.DrawText(TechiesHUD.HUDfont, size_x / 2 - 400 + (53 + Menu.GetValue(TechiesHUD.optionPanelInfoDistLeft) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoDistLeftInvert)) * Hero.GetPlayerID(Unit) + Menu.GetValue(TechiesHUD.optionPanelInfoXL) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoXLInvert), 32 + Menu.GetValue(TechiesHUD.optionPanelInfoY) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoYInvert), (math.ceil(Hp * 10) / 10), 0)
+							Renderer.DrawText(TechiesHUD.HUDfont, size_x / 2 - 400 + (53 + Menu.GetValue(TechiesHUD.optionPanelInfoDistLeft) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoDistLeftInvert)) * Hero.GetPlayerID(Unit) + Menu.GetValue(TechiesHUD.optionPanelInfoXL) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoXLInvert), 52 + Menu.GetValue(TechiesHUD.optionPanelInfoY) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoYInvert) + Menu.GetValue(TechiesHUD.optionPanelInfoYColumn) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoYColumnInvert), (math.ceil(Hp_all * 10) / 10), 0)
+						end
+					else
+						if (Entity.GetTeamNum(myHero) == 2) then
+							Renderer.DrawText(TechiesHUD.HUDfont, size_x / 2 + 30 + (53 + Menu.GetValue(TechiesHUD.optionPanelInfoDistRight) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoDistRightInvert)) * (Hero.GetPlayerID(Unit) - 4) + Menu.GetValue(TechiesHUD.optionPanelInfoXR) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoXRInvert), 32 + Menu.GetValue(TechiesHUD.optionPanelInfoY) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoYInvert), (math.ceil(Hp * 10) / 10).. "|" .. (math.ceil(Hp_all * 10) / 10), 0)
+						end
+						if (Entity.GetTeamNum(myHero) == 3) then
+							Renderer.DrawText(TechiesHUD.HUDfont, size_x / 2 - 400 + (53 + Menu.GetValue(TechiesHUD.optionPanelInfoDistLeft) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoDistLeftInvert)) * Hero.GetPlayerID(Unit) + Menu.GetValue(TechiesHUD.optionPanelInfoXL) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoXLInvert), 32 + Menu.GetValue(TechiesHUD.optionPanelInfoY) * (-1) ^ Menu.GetValue(TechiesHUD.optionPanelInfoYInvert), (math.ceil(Hp * 10) / 10) .. "|" .. (math.ceil(Hp_all * 10) / 10), 0)
+						end
 					end
 				end
 			end -- remote num display
@@ -423,7 +418,7 @@ function TechiesHUD.OnUpdate()
 								and NPC.GetModifier(Unit2, "modifier_techies_remote_mine") ~= nil
 								then
 								--Log.Write(remote_need_damage)
-									if (remote_need_damage > 0) then
+									if (remote_need_damage > 0) or Menu.GetValue(TechiesHUD.optionLegitDetonate) == 1 then
 										Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, 0, Vector(0, 0, 0), NPC.GetAbilityByIndex(Unit2, 0), Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, Unit2, 0, 0)
 										check_detonate = GameRules.GetGameTime()
 										remote_need_damage = remote_need_damage - (mines_damage[Entity.GetIndex(Unit2)] + 150 * (NPC.HasItem(myHero, "item_ultimate_scepter", 1) and 1 or 0)) * NPC.GetMagicalArmorDamageMultiplier(Unit)
