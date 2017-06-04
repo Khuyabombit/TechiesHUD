@@ -380,6 +380,7 @@ function TechiesHUD.OnUpdate()
 		if Ability.GetLevel(remote) ~= 0 then -- remote auto detonate
 			if  Entity.IsNPC(Unit)
 			and Entity.GetTeamNum(Unit) ~= Entity.GetTeamNum(myHero)
+			and not Entity.IsDormant(Unit)
 			and Entity.IsHero(Unit)
 			and NPC.IsKillable(Unit)
 			and not NPC.IsIllusion(Unit)
@@ -418,7 +419,7 @@ function TechiesHUD.OnUpdate()
 								and NPC.GetModifier(Unit2, "modifier_techies_remote_mine") ~= nil
 								then
 								--Log.Write(remote_need_damage)
-									if (remote_need_damage > 0) or Menu.GetValue(TechiesHUD.optionLegitDetonate) == 1 then
+									if (remote_need_damage > 0 or Menu.GetValue(TechiesHUD.optionLegitDetonate) == 1) then
 										Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET, 0, Vector(0, 0, 0), NPC.GetAbilityByIndex(Unit2, 0), Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, Unit2, 0, 0)
 										check_detonate = GameRules.GetGameTime()
 										remote_need_damage = remote_need_damage - (mines_damage[Entity.GetIndex(Unit2)] + 150 * (NPC.HasItem(myHero, "item_ultimate_scepter", 1) and 1 or 0)) * NPC.GetMagicalArmorDamageMultiplier(Unit)
