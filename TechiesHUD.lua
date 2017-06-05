@@ -9,19 +9,20 @@ TechiesHUD.optionLegitDetonate = Menu.AddOption({ "Hero Specific", "Techies", "T
 Menu.SetValueName(TechiesHUD.optionLegitDetonate, 1, "legit")
 Menu.SetValueName(TechiesHUD.optionLegitDetonate, 0, "standart")
 
-TechiesHUD.optionDelay = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Action" }, "Delay detonate ms", "wait some time after detonate in ms", 0, 3000, 50)
+TechiesHUD.optionDelay = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Action" }, "Delay detonate ms", "Waiting some time before detonate in ms", 0, 3000, 50)
 
 TechiesHUD.optionStack = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Action" }, "Stack mines", "Automatically puts mines as close as possible to each other")
-
 TechiesHUD.optionStackRange = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Action" }, "Range Stack mines", "The radius at which nearby mines will be placed on the nearest mine", 0, 500, 10)
 
 TechiesHUD.optionForce = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Action" }, "Auto force stuff", "Automatically use force stuff")
+TechiesHUD.optionForceDelay = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Action" }, "Auto force delay", "Waiting some time before force stuff in ms. Recomend 500", 0, 6000, 50)
+TechiesHUD.optionForceDrawLine = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Force Stuff line", "Draw enemy position after force stuff")
 
 TechiesHUD.optionLR = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Land mines range", "Draw the radius of land mines")
-
 TechiesHUD.optionSR = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Stasis mines range", "Draw the radius of stasis mines")
-
 TechiesHUD.optionRR = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Remote mines range", "Remote the radius of land mines")
+
+TechiesHUD.optionCircleResolution = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Circle resolution", "The larger the number, the less detailed the radius. Standart 20", 1, 180)
 
 TechiesHUD.optionPanelInfo = Menu.AddOption({ "Hero Specific", "Techies", "TechiesHUD", "Display" }, "Panel", "Panel showing the number of mines for killing")
 
@@ -81,6 +82,12 @@ function TechiesHUD.OnMenuOptionChange(option, oldValue, newValue)
 		TechiesHUD.HUDfont = Renderer.LoadFont("Tahoma", newValue, Enum.FontWeight.EXTRABOLD)
 		Config.WriteInt("TechiesHUD", "Bar_font", newValue)
 	end
+	if option == TechiesHUD.optionCircleResolution then
+		Config.WriteInt("TechiesHUD", "Circle res", newValue)
+	end
+	if option == TechiesHUD.optionForceDelay then
+		Config.WriteInt("TechiesHUD", "Force Stuff delay", newValue)
+	end
 end
 
 function TechiesHUD.OnEntityCreate(ent)
@@ -98,7 +105,7 @@ end
 function DrawCircle(UnitPos, radius)
 	local x1,y1,visible1 = Renderer.WorldToScreen(UnitPos)
 	local x4, y4, x3, y3, visible3
-	local dergee = 15
+	local dergee = Config.ReadInt("TechiesHUD", "Circle res", 20)
 	for angle = 0, 360 / dergee do
 		x4 = 0 * math.cos(angle * dergee / 57.3) - radius * math.sin(angle * dergee / 57.3) 
 		y4 = radius * math.cos(angle * dergee / 57.3) + 0 * math.sin(angle * dergee / 57.3)
@@ -268,7 +275,7 @@ function TechiesHUD.OnDraw()
 			end
 			
 			if Menu.IsEnabled(TechiesHUD.optionForce) then
-				if (force ~= nil) then
+				if (force ~= nil) and not NPC.IsIllusion(Unit) then
 					
 					if (hero_time[i] == 1 and forced_time ~= 0 and GameRules.GetGameTime() - forced_time > 1) then
 						hero_time[i] = 0
@@ -292,18 +299,18 @@ function TechiesHUD.OnDraw()
 						and NPC.IsPositionInRange(Unit2, UnitPos + Vector(x4,y4,0), 425 - NPC.GetMoveSpeed(Unit) * 0.1, 0)) 
 						and NPC.GetModifier(Unit2, "modifier_techies_remote_mine") ~= nil
 						then
-							if (mines_damage[Entity.GetIndex(Unit)] == nil or mines_damage[Entity.GetIndex(Unit)] == -1) then
-								mines_damage[Entity.GetIndex(Unit)] = remote_damage
+							if (mines_damage[Entity.GetIndex(Unit2)] == nil or mines_damage[Entity.GetIndex(Unit2)] == -1) then
+								mines_damage[Entity.GetIndex(Unit2)] = remote_damage
 							end
 							remote_sum_damage = remote_sum_damage + mines_damage[Entity.GetIndex(Unit2)] + 150 * (NPC.HasItem(myHero, "item_ultimate_scepter", 1) and 1 or 0)
 						end
 					end
 					if (NPC.IsPositionInRange(myHero, UnitPos, 1000, 0))
-					and (remote_sum_damage * NPC.GetMagicalArmorDamageMultiplier(Unit) > Entity.GetHealth(Unit) and GameRules.GetGameTime() - forc_time > 0.5) then
+					and remote_sum_damage * NPC.GetMagicalArmorDamageMultiplier(Unit) > Entity.GetHealth(Unit) and GameRules.GetGameTime() - forc_time > 0.5 then
 						if (force_direction[i] == 0) then
 							force_direction[i] = GameRules.GetGameTime()
 						end
-						if (force_direction[i] ~= 0 and GameRules.GetGameTime() - force_direction[i] > 0.5) then
+						if (force_direction[i] ~= 0 and GameRules.GetGameTime() - force_direction[i] > Config.ReadInt("TechiesHUD", "Force Stuff delay", 500) / 1000) then
 							Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_TARGET, Unit, Vector(0, 0, 0), force, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY, myHero, 0, 0)
 							forc_time = GameRules.GetGameTime()
 							hero_time[i] =  1
@@ -314,7 +321,7 @@ function TechiesHUD.OnDraw()
 						force_direction[i] = 0
 					end
 					local x, y, visible = Renderer.WorldToScreen(UnitPos)
-					if visible then 
+					if visible and Menu.GetValue(TechiesHUD.optionForceDrawLine) == 1 then
 						Renderer.DrawLine(x, y, x3, y3)
 					end
 				end
@@ -323,10 +330,11 @@ function TechiesHUD.OnDraw()
 			
 		
 		if Menu.IsEnabled(TechiesHUD.optionPanelInfo) then
-			if Ability.GetLevel(remote) ~= 0 then -- remote num display
+			if Ability.GetLevel(remote) ~= 0 then -- remote num panel display
 				if  Entity.IsNPC(Unit)
 				and Entity.GetTeamNum(Unit) ~= Entity.GetTeamNum(myHero)
 				and Entity.IsHero(Unit)
+				and not NPC.IsIllusion(Unit)
 				then
 					
 					local Hp = Entity.GetHealth(Unit) / ((remote_damage + 150 * (NPC.HasItem(myHero, "item_ultimate_scepter", 1) and 1 or 0)) * NPC.GetMagicalArmorDamageMultiplier(Unit))
