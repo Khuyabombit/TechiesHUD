@@ -6,8 +6,8 @@ TechiesHUD.Locale = {
 		["english"] = "TechiesHUD"
 	},
 	["desc"] = {
-		["english"] = "TechiesHUD v1.2.1",
-		["russian"] = "TechiesHUD v1.2.1"
+		["english"] = "TechiesHUD v1.2.2",
+		["russian"] = "TechiesHUD v1.2.2"
 	},
 	["optionDetonate"] = {
 		["english"] = "Auto detonate remote mines",
@@ -1427,7 +1427,7 @@ function TechiesHUD.OnUpdate()
 			end
 			if hero_pos ~= nil then
 				local x, y = Renderer.WorldToScreen(hero_pos)
-				if x < 0 or x > size_x or y < 0 or y > size_y then
+				if optionDetonateCam and (x < 0 or x > size_x or y < 0 or y > size_y) then
 					Engine.ExecuteCommand("dota_camera_set_lookatpos " .. hero_pos:GetX() .. " " .. hero_pos:GetY())
 					hero_cam_first_pos = Entity.GetAbsOrigin(myHero)
 					hero_cam_time = GameRules.GetGameTime()
